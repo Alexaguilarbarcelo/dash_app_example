@@ -5,27 +5,24 @@ import dash_html_components as html
 import plotly.graph_objs as go
 import pandas as pd
 
-df = pd.read_csv('nama_10_gdp.csv')
+df = pd.read_csv('dataeurostat.csv')
+
+available_na_item = df['NA_ITEM'].unique()
+available_countries = df['GEO'].unique()
+df1 = df[df['UNIT'] == 'Current prices, million euro']
 
 app = dash.Dash(__name__)
 server = app.server
 
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 
-available_indicators = df['NA_ITEM'].unique()
-available_countries = df['GEO'].unique()
-
-df1 = df[df['UNIT'] == 'Current prices, million euro']
-
 app.layout = html.Div([
-    
     html.Div([
-
-        html.Div([
+		html.Div([
             dcc.Dropdown( 
             	id='xaxis-column1',
-                options=[{'label': i, 'value': i} for i in available_indicators],
-                value='Fertility rate, total (births per woman)'
+                options=[{'label': i, 'value': i} for i in available_na_item],
+                value='Imports of goods and services'
             ),
             dcc.RadioItems(
                 id='xaxis-type1',
@@ -39,8 +36,8 @@ app.layout = html.Div([
     	html.Div([
             dcc.Dropdown(
                 id='yaxis-column1',
-                options=[{'label': i, 'value': i} for i in available_indicators],
-                value='Life expectancy at birth, total (years)'
+                options=[{'label': i, 'value': i} for i in available_na_item],
+                value='Exports of goods and services'
             ),
             dcc.RadioItems(
                 id='yaxis-type1',
@@ -51,7 +48,7 @@ app.layout = html.Div([
         ],style={'width': '30%', 'float': 'right', 'display': 'inline-block'})
     ]),
 
-    dcc.Graph(id='graph1'),
+    dcc.Graph(id='Eurostat-graph1'),
 
     html.Div(dcc.Slider(
         id='year--slider',
@@ -59,18 +56,19 @@ app.layout = html.Div([
         max=df['TIME'].max(),
         value=df['TIME'].max(),
         step=None,
-        marks={str(TIME): str(TIME) for TIME in df['TIME'].unique()}
-
+        marks={str(TIME): str(TIME) for TIME in df['TIME'].unique()},
+    
     ), style={'marginRight': 50, 'marginLeft': 110},),
+
+    html.Hr(),
 
 # Second graph
 
     html.Div([
-
         html.Div([
         dcc.Dropdown(
                 id='xaxis-column2',
-                options=[{'label': i, 'value': i} for i in available_indicators],
+                options=[{'label': i, 'value': i} for i in available_na_item],
                 value='Gross domestic product at market prices'
             )
         ],
@@ -80,19 +78,19 @@ app.layout = html.Div([
             dcc.Dropdown(
                 id='yaxis-column2',
                 options=[{'label': i, 'value': i} for i in available_countries],
-                value='France'
+                value='Germany'
             
             )
         ],style={'width': '30%', 'marginTop': 40, 'float': 'right', 'display': 'inline-block'})
     ]),
 
-    dcc.Graph(id='graph2'),
+    dcc.Graph(id='Eurostat-graph2'),
 
 
 ])
 
 @app.callback(
-    dash.dependencies.Output('graph1', 'figure'),
+    dash.dependencies.Output('Eurostat-graph1', 'figure'),
     [dash.dependencies.Input('xaxis-column1', 'value'),
      dash.dependencies.Input('yaxis-column1', 'value'),
      dash.dependencies.Input('year--slider', 'value')])
@@ -123,15 +121,14 @@ def update_graph(xaxis_column_name, yaxis_column_name,
                 'title': yaxis_column_name,
                 'type': 'linear'
             },
-            margin={'l': 110, 'b': 50, 't': 20, 'r': 50},
+            margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            legend={'x': 0, 'y': 1},
             hovermode='closest'
         )
     }
     
-# For the second one
-
 @app.callback(
-    dash.dependencies.Output('graph2', 'figure'),
+    dash.dependencies.Output('Eurostat-graph2', 'figure'),
     [dash.dependencies.Input('xaxis-column2', 'value'),
      dash.dependencies.Input('yaxis-column2', 'value')])
 
@@ -158,7 +155,8 @@ def update_graph(xaxis_column_name, yaxis_column_name):
                 'title': yaxis_column_name,
                 'type': 'linear'
             },
-            margin={'l': 110, 'b': 50, 't': 20, 'r': 50},
+            margin={'l': 40, 'b': 40, 't': 10, 'r': 10},
+            legend={'x': 0, 'y': 1},
             hovermode='closest'
         )
     }
